@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-hospital-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Test123.
+      MYSQL_DATABASE: hospital
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Test123.
+    ports:
+      - "3306:3306"  # Expose MySQL port to the host
+    volumes:
+      - mysql-data:/var/lib/mysql  # Persist MySQL data even after container restarts
+    networks:
+      - hospital-network
+
+  app:
+    build: .
+    container_name: hospital-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hospital_appointment
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+    ports:
+      - "8080:8080"  # Expose Spring Boot app on port 8080
+    depends_on:
+      - mysql  # Ensure MySQL starts before the Spring Boot app
+    networks:
+      - hospital-network
+    restart: always  # Restart Spring Boot app if it crashes
+
+volumes:
+  mysql-data: {}  # Define volume for MySQL to persist data
+
+networks:
+  hospital-network:
+    driver: bridge  # Use bridge network mode to allow containers to communicate
